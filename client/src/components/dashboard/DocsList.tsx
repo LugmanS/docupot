@@ -4,7 +4,7 @@ const DocsList = () => {
     const navigate = useNavigate();
 
     const onDocClick = () => {
-        navigate("/doc/13o49123");
+        navigate("/document/13o49123");
     };
 
     return (
