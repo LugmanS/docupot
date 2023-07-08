@@ -1,7 +1,9 @@
+import AppRouter from "./AppRouter";
+
 function App() {
   return (
-    <div>Docupot Client</div>
-  )
+    <AppRouter />
+  );
 }
 
-export default App
+export default App;
