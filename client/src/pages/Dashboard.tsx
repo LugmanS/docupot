@@ -1,11 +1,27 @@
-import DocsList from "../components/dashboard/DocsList";
+import { useAuth } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import DocumentList from "../components/dashboard/DocumentList";
 import Navbar from "../components/dashboard/Navbar";
 
+
 const Dashboard = () => {
+    const { getToken } = useAuth();
+
+    const token = async () => {
+        const value = await getToken();
+        console.log(value);
+    };
+
+    useEffect(() => {
+        token();
+    }, []);
+
     return (
-        <div className="w-screen h-screen">
+        <div className="">
             <Navbar />
-            <DocsList />
+            <div className="max-w-5xl mx-auto py-20 bg-red-200">
+                <DocumentList />
+            </div>
         </div>
     );
 };

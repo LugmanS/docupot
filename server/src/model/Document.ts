@@ -5,7 +5,19 @@ const DocumentSchema = new Schema({
         type: String,
         required: true
     },
-    data: {
+    authorId: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now()
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now()
+    },
+    content: {
         type: Object,
         required: true
     }
