@@ -10,6 +10,7 @@ import http from "http";
 import cors from "cors";
 import { DocumentRouter } from "./controller/Documents.js";
 import Document from "./model/Document.js";
+import documentEventHandler from "./socket/document.js";
 
 dotenv.config();
 
@@ -35,11 +36,17 @@ mongoose.connect(process.env.MONGODB_URI);
 
 app.use('/api/v1/documents', ClerkExpressWithAuth(), DocumentRouter);
 
+
+const onConnection = (socket) => {
+    documentEventHandler(socket);
+};
+
+io.on('connection', onConnection);
+
 io.on("connection", socket => {
     socket.on("get-document", async documentId => {
         console.log('Socket connected for documentId:', documentId);
         const document = await findOrCreateDocument(documentId);
-        console.log(document);
         socket.join(documentId);
         socket.emit("load-document", document.content);
 

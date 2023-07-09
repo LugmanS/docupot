@@ -51,7 +51,7 @@ const DocumentList = () => {
 
     return (
         <div className="flex items-center flex-wrap gap-6">
-            <div className="w-48 h-72 border flex items-center justify-center" onClick={() => createNewDocument}>
+            <div className="w-48 h-72 border flex items-center justify-center" onClick={() => createNewDocument()}>
                 <FiPlus className="w-7 h-7" />
             </div>
             {documents.map((doc) =>

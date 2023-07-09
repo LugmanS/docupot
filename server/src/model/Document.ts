@@ -1,4 +1,17 @@
 import { Schema, model } from "mongoose";
+import { AccessType } from "../types.js";
+
+const allowedUserSchema = new Schema({
+    userEmail: {
+        type: String,
+        required: true
+    },
+    accessType: {
+        type: String,
+        enum: ['READ_ONLY', 'EDIT', 'OWNER'],
+        required: true
+    }
+});
 
 const DocumentSchema = new Schema({
     title: {
@@ -20,7 +33,12 @@ const DocumentSchema = new Schema({
     content: {
         type: Object,
         required: true
-    }
+    },
+    isPublic: {
+        type: Boolean,
+        default: false
+    },
+    allowedUsers: [allowedUserSchema]
 });
 
 

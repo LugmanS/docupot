@@ -2,7 +2,7 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { editorToolbarOptions, socket } from "../utils/config";
+import { editorToolbarOptions, socket } from "../../utils/config";
 
 const TextEditor = () => {
     const { documentId } = useParams();

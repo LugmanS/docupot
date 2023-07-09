@@ -4,13 +4,17 @@ const router = Router();
 
 //Get all user documents
 router.get("/", async (req, res) => {
-    const { userId } = req.auth;
+    console.log(req.auth);
+    const { userId, userEmail } = req.auth;
     if (!userId) {
         return res.sendStatus(401);
     }
     try {
         const documents = await Document.find({
-            authorId: userId
+            $or: [
+                { authorId: userId },
+                { "allowedUsers.userEmail": userEmail }
+            ]
         });
         res.status(200).json(documents);
     } catch (error) {
