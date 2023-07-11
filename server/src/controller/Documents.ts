@@ -94,7 +94,8 @@ router.put("/:documentId", async (req, res) => {
             title: req.body.title,
             isPublic: req.body.isPublic,
             allowedUsers: req.body.allowedUsers,
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
+            ...(req.body.content && { content: req.body.content })
         });
         res.status(200).json(document);
     } catch (error) {

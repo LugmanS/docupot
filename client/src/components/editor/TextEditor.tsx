@@ -3,7 +3,8 @@ import { Editor } from "@monaco-editor/react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { useEffect, useState } from "react";
 import { Document } from "../../utils/types";
-import { socket } from "../../utils/config";
+import { baseURL, socket } from "../../utils/config";
+import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
 const TextEditor = ({ document, accessType }: { document: Document; accessType: string; }) => {
@@ -12,27 +13,44 @@ const TextEditor = ({ document, accessType }: { document: Document; accessType: 
     const [content, setContent] = useState(document.content);
     const { getToken } = useAuth();
 
-    useEffect(() => {
-        const setToken = async () => {
-            const token = await getToken();
-            if (token) {
-                socket.auth = { token };
-            }
-        };
-        socket.connect();
-        setToken();
-        socket.emit("document:join", documentId);
-        socket.on("document:broadcastedChanges", (content) => {
-            console.log('Content', content);
-            setContent(content);
-        });
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
+    // useEffect(() => {
+    //     const setToken = async () => {
+    //         const token = await getToken();
+    //         if (token) {
+    //             socket.auth = { token };
+    //         }
+    //     };
+    //     socket.connect();
+    //     setToken();
+    //     socket.emit("document:join", documentId);
+    //     socket.on("document:broadcastedChanges", (content) => {
+    //         console.log('Content', content);
+    //         setContent(content);
+    //     });
+    //     return () => {
+    //         socket.disconnect();
+    //     };
+    // }, []);
+
+    const updateContent = async () => {
+        try {
+            await axios.put(`${baseURL}/documents/${documentId}`, { ...document, content }, {
+                headers: {
+                    'Authorization': await getToken()
+                }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // useEffect(() => {
+    //     const timeout = setTimeout(() => socket.emit("document:saveChanges", { documentId, content }), 300);
+    //     return () => clearTimeout(timeout);
+    // }, [content]);
 
     useEffect(() => {
-        const timeout = setTimeout(() => socket.emit("document:saveChanges", { documentId, content }), 300);
+        const timeout = setTimeout(() => updateContent(), 400);
         return () => clearTimeout(timeout);
     }, [content]);
 

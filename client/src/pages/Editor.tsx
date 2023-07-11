@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/editor/Navbar";
 import TextEditor from "../components/editor/TextEditor";
-import { baseURL, socket } from "../utils/config";
+import { baseURL } from "../utils/config";
 import { AccessType, Document } from "../utils/types";
 import NotFound from "../assets/notFound.svg";
 import Forbidden from "../assets/forbidden.svg";
@@ -70,15 +70,6 @@ const Editor = () => {
     useEffect(() => {
         isConfigChanged && documentId && getDocumentData();
     }, [isConfigChanged]);
-
-    useEffect(() => {
-        if (document && document.allowedUsers.length > 0) {
-            socket.connect();
-        }
-        return () => {
-            socket.disconnect();
-        };
-    }, []);
 
     return (
         <>
