@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  docupot-server:
+    container_name: docupot-server
+    image: lugman/docupot-server:1.0.0
+    ports:
+      - "8000:8000"
+    restart: always
+    environment:
+      - MONGODB_URI={{MONGODB_URI}}
+      - CLERK_SECRET_KEY={{CLERK_SECRET}}
+      - RESEND_API_KEY={{RESEND_KEY}}
+      - FROM_EMAIL={{FROM_EMAIL}}
+      - CLIENT_HOST={{CLIENT_URI}}
