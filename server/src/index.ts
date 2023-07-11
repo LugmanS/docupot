@@ -1,15 +1,15 @@
 import express from "express";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import {
-    ClerkExpressWithAuth,
+    ClerkExpressRequireAuth,
     LooseAuthProp,
+    verifyToken
 } from '@clerk/clerk-sdk-node';
 import http from "http";
 import cors from "cors";
 import { DocumentRouter } from "./controller/Documents.js";
-import Document from "./model/Document.js";
 import documentEventHandler from "./socket/document.js";
 
 dotenv.config();
@@ -34,36 +34,27 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
 
-app.use('/api/v1/documents', ClerkExpressWithAuth(), DocumentRouter);
+app.use('/api/v1/documents', ClerkExpressRequireAuth(), DocumentRouter);
 
 
-const onConnection = (socket) => {
+const onConnection = (socket: Socket) => {
     documentEventHandler(socket);
+    socket.on("disconnect", () => console.log('Disconnected socket:', socket.id));
 };
 
-io.on('connection', onConnection);
-
-io.on("connection", socket => {
-    socket.on("get-document", async documentId => {
-        console.log('Socket connected for documentId:', documentId);
-        const document = await findOrCreateDocument(documentId);
-        socket.join(documentId);
-        socket.emit("load-document", document.content);
-
-        socket.on("send-changes", delta => {
-            socket.broadcast.to(documentId).emit("receive-changes", delta);
+io.use(async (socket, next) => {
+    try {
+        await verifyToken(socket.handshake.auth.token, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+            issuer: "https://equal-llama-73.clerk.accounts.dev"
         });
-
-        socket.on("save-document", async content => {
-            await Document.findByIdAndUpdate(documentId, { content });
-        });
-    });
+        console.log('Successful handshake for socket:', socket.id);
+        next();
+    } catch (error) {
+        console.log(`Error while socket handshake:${error}`);
+    }
 });
 
-async function findOrCreateDocument(id) {
-    const document = await Document.findById(id);
-    return document;
-}
-
+io.on('connection', onConnection);
 
 server.listen(PORT, () => console.log('Server started and listening at port:', PORT));

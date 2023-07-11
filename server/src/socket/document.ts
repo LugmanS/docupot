@@ -3,6 +3,32 @@ import Document from "../model/Document.js";
 import { AccessType } from "../types.js";
 
 export default function documentEventHandler(socket: Socket) {
+
+    const join = documentId => socket.join(documentId);
+
+    const updateDocumentContent = async (config: {
+        documentId: string;
+        content: string;
+    }) => {
+        try {
+            await Document.findByIdAndUpdate(config.documentId, { content: config.content });
+            socket.broadcast.to(config.documentId).emit("document:broadcastedChanges", config.content);
+        } catch (error) {
+            console.log('Error while updating', error);
+        }
+    };
+
+    const sendBriefDocumentData = async (documentId) => {
+        try {
+            const document = await Document.findById(documentId);
+            console.log('DocumentData', document);
+            socket.emit('document:BriefData', document);
+        } catch (error) {
+            console.log(`Error while sending brief data for document:${documentId} Error:`, error);
+            socket.emit("error", error);
+        }
+    };
+
     const addAllowedUser = async (config: {
         documentId: string;
         userEmail: string;
@@ -43,6 +69,10 @@ export default function documentEventHandler(socket: Socket) {
         }
     };
 
+    socket.on("document:join", join);
+    socket.on("document:saveChanges", updateDocumentContent);
+    socket.on("document:broadcastChanges", updateDocumentContent);
+    socket.on("document:getBriefData", sendBriefDocumentData);
     socket.on("document:addAllowedUser", addAllowedUser);
     socket.on("document:removedAllowedUser", removedAllowedUser);
 }

@@ -8,7 +8,7 @@ const allowedUserSchema = new Schema({
     },
     accessType: {
         type: String,
-        enum: ['READ_ONLY', 'EDIT', 'OWNER'],
+        enum: ['READ_ONLY', 'VIEW', 'OWNER'],
         required: true
     }
 });
@@ -31,7 +31,7 @@ const DocumentSchema = new Schema({
         default: Date.now()
     },
     content: {
-        type: Object,
+        type: String,
         required: true
     },
     isPublic: {
@@ -40,6 +40,8 @@ const DocumentSchema = new Schema({
     },
     allowedUsers: [allowedUserSchema]
 });
+
+DocumentSchema.index({ title: 'text', content: 'text' });
 
 
 const Document = model('Document', DocumentSchema);
