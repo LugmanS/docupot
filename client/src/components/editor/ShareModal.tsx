@@ -1,4 +1,4 @@
-import { ClerkLoading, useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { AccessType, Document } from "../../utils/types";
 import ModalWrapper from "../ModalWrapper";
 import Spinner from "../Spinner";
 
-const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: () => void; _document: Document; }) => {
+const ShareModal = ({ isOpen, onClose, _document, setConfigChanged }: { isOpen: boolean; onClose: () => void; _document: Document; setConfigChanged: () => void; }) => {
     const { getToken } = useAuth();
     const [document, setDocument] = useState<Document>(_document);
 
@@ -17,10 +17,26 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
 
     const validateEmail = (email: string) => {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email);
+        if (emailRegex.test(email)) {
+            return (_document.allowedUsers.filter(user => user.userEmail === email).length === 0 && _document.authorId !== email);
+        }
     };
 
-    const addNewEmail = () => {
+    const [isAddLoading, setAddLoading] = useState(false);
+
+    const addNewEmail = async () => {
+        setAddLoading(true);
+        try {
+            await axios.post(`${baseURL}/documents/${_document._id}/share`,
+                { userEmail: newEmail, accessType: AccessType.VIEW }, {
+                headers: {
+                    "Authorization": await getToken()
+                }
+            });
+            setAddLoading(false);
+        } catch (error) {
+            setAddLoading(false);
+        }
         setDocument((prev) => {
             prev.allowedUsers.push({
                 userEmail: newEmail,
@@ -52,6 +68,10 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
         });
     };
 
+    useEffect(() => {
+        setDocument(_document);
+    }, [isOpen]);
+
     //Save
     const [isSaveEnabled, setSaveEnabled] = useState(false);
     const [isSaveLoading, setSaveLoading] = useState(false);
@@ -69,6 +89,8 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
                 }
             });
             setSaveLoading(false);
+            setConfigChanged(true);
+            onClose();
         } catch (error) {
             setSaveLoading(false);
             console.log(error);
@@ -94,9 +116,16 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
             <div className="flex flex-col items-start gap-2 my-2">
                 <div className="w-full my-2 relative">
                     <input className="w-full px-4 py-3 border rounded text-sm focus:border-neutral-900 focus:outline-none" placeholder="Add people by entering their email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-                    {validateEmail(newEmail) && <button className="flex items-center gap-1 text-primary-text-dark px-4 py-1.5 text-sm rounded-full bg-primary-light absolute top-1/2 transform -translate-y-1/2 right-1.5" onClick={addNewEmail}>
-                        <p>Add</p>
-                    </button>}
+                    {validateEmail(newEmail) && <>
+                        {
+                            isAddLoading ? <div className="flex items-center gap-2 text-primary-text-dark px-4 py-1.5 text-sm rounded-full bg-primary-light absolute top-1/2 transform -translate-y-1/2 right-1.5" onClick={addNewEmail}>
+                                <Spinner className="w-[14px] h-[14px]" />
+                                <p>Adding</p>
+                            </div> : <button className="flex items-center gap-1 text-primary-text-dark px-4 py-1.5 text-sm rounded-full bg-primary-light absolute top-1/2 transform -translate-y-1/2 right-1.5" onClick={addNewEmail}>
+                                <p>Add</p>
+                            </button>
+                        }
+                    </>}
                 </div>
                 <div className="w-full">
                     <h1 className="font-medium">People with access</h1>
@@ -106,7 +135,7 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
                                 {
                                     document.allowedUsers.map((allowedUser, index) => <div className="flex items-center justify-between w-full" key={index}>
                                         <div className="flex items-center gap-2">
-                                            <div className="p-2 rounded-full bg-gray-700 w-9 h-9 flex items-center justify-center text-white capitalize">{allowedUser.userEmail[0]}</div>
+                                            <div className="w-[44px] h-[44px] rounded-full bg-neutral-400 flex items-center justify-center text-white capitalize">{allowedUser.userEmail[0]}</div>
                                             <p>{allowedUser.userEmail}</p>
                                         </div>
                                         <div>
@@ -116,7 +145,7 @@ const ShareModal = ({ isOpen, onClose, _document }: { isOpen: boolean; onClose: 
                                                     <option value={AccessType.VIEW}>View</option>
                                                     <option value={AccessType.EDIT}>Edit</option>
                                                 </select>
-                                                <button className="text-secondary-text-light p-2 rounded hover:bg-red-100 hover:text-red-500 ml-2" onClick={() => deleteUser(index)}>
+                                                <button className="text-secondary-text-light p-2 rounded-full hover:bg-red-100 hover:text-red-500 ml-2" onClick={() => deleteUser(index)}>
                                                     <FiTrash />
                                                 </button>
                                             </>

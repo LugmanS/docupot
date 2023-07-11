@@ -4,7 +4,7 @@ export interface Document {
     authorId: string;
     createdAt: string;
     updatedAt: string;
-    content: object;
+    content: string;
     isPublic: boolean;
     allowedUsers: AllowedUser[];
     __v: number;

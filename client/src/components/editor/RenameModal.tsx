@@ -2,33 +2,32 @@ import { useAuth } from "@clerk/clerk-react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { baseURL } from "../../utils/config";
 import { Document } from "../../utils/types";
 import ModalWrapper from "../ModalWrapper";
 import Spinner from "../Spinner";
 
-const ConfirmDelete = ({ isOpen, onClose, document }: { isOpen: boolean, onClose: () => void; document: Document; }) => {
+const RenameModal = ({ isOpen, onClose, document, setConfigChanged }: { isOpen: boolean, onClose: () => void; document: Document; setConfigChanged: () => void; }) => {
 
     const { getToken } = useAuth();
-    const navigate = useNavigate();
 
-    const [isDeleteLoading, setDeleteLoading] = useState(false);
+    const [isLoading, setLoading] = useState(false);
+    const [name, setName] = useState(document.title);
 
-    const deleteDocument = async () => {
-        setDeleteLoading(true);
+    const renameDocument = async () => {
+        setLoading(true);
         try {
-            await axios.delete(`${baseURL}/documents/${document._id}`, {
+            await axios.put(`${baseURL}/documents/${document._id}`, { ...document, title: name }, {
                 headers: {
                     'Authorization': await getToken()
                 }
             });
-            setDeleteLoading(false);
-            navigate("/dashboard");
+            setLoading(false);
+            setConfigChanged(true);
             onClose();
         } catch (error) {
-            setDeleteLoading(false);
-            onClose();
+            setLoading(false);
+            console.log(error);
         }
     };
 
@@ -38,25 +37,26 @@ const ConfirmDelete = ({ isOpen, onClose, document }: { isOpen: boolean, onClose
                 as="h3"
                 className="text-lg font-medium leading-6 text-primary-text-light"
             >
-                Confirm delete '{document.title}'
+                Rename document
             </Dialog.Title>
             <div className="my-3">
-                <p className="text-gray-500">Are you sure about deleting this file. This action can't be reverted</p>
+                <p className="text-gray-500">Please enter a new name for the item:</p>
+                <input type="text" minLength={5} maxLength={40} value={name} onChange={(e) => setName(e.target.value)} className="border w-full rounded py-2 px-4 text-sm mt-2 focus:outline-neutral-800 " />
             </div>
             <div className="flex items-center gap-2 w-full justify-end mt-4">
                 <button className="py-2 px-4 text-sm rounded-full  font-medium border hover:text-white hover:bg-neutral-900 duration-200 transition-colors" onClick={onClose}>
                     Cancel
                 </button>
-                <button className="py-2 px-4 text-sm rounded-full bg-red-100 text-red-500 font-medium hover:bg-red-200 duration-200 transition-colors flex items-center gap-2" onClick={deleteDocument}>
+                <button className="py-2 px-4 text-sm rounded-full bg-neutral-800 text-white font-medium disabled:bg-neutral-400 hover:bg-neutral-950 duration-200 transition-colors flex items-center gap-2" onClick={renameDocument} disabled={name === document.title}>
                     {
-                        isDeleteLoading ? <>
+                        isLoading ? <>
                             <Spinner className="w-4 h-4" />
-                            <p>Deleting</p>
-                        </> : "Confirm delete"
+                            <p>Saving</p>
+                        </> : "Save"
                     }
                 </button>
             </div>
         </ModalWrapper>
     );
 };
-export default ConfirmDelete;
+export default RenameModal;

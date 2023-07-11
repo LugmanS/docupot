@@ -17,14 +17,13 @@ const Editor = () => {
 
     const { user } = useUser();
 
-    console.log(user);
-
     const [document, setDocument] = useState<Document | null>(null);
     const [documentError, setDocumentError] = useState<number | null>(null);
 
     const [userAccessType, setUserAccessType] = useState<string | null>(null);
 
     const getDocumentData = async () => {
+        console.log('Called', isConfigChanged);
         if (!documentId) return;
         try {
             const response = await axios.get<Document>(`${baseURL}/documents/${documentId}`, {
@@ -33,11 +32,13 @@ const Editor = () => {
                 }
             });
             setDocument(response.data);
+            isConfigChanged && setConfigChanged(false);
             if (user && user.emailAddresses) {
                 if (response.data.authorId === user.primaryEmailAddress?.emailAddress) {
                     return setUserAccessType(AccessType.OWNER);
                 }
-                const userPermission = document?.allowedUsers.filter((allowedUser) => allowedUser.userEmail === user.primaryEmailAddress?.emailAddress);
+                console.log({ user });
+                const userPermission = response.data.allowedUsers.filter((allowedUser) => allowedUser.userEmail === user.primaryEmailAddress?.emailAddress);
                 if (userPermission) {
                     return setUserAccessType(userPermission[0].accessType);
                 }
@@ -60,9 +61,15 @@ const Editor = () => {
         navigate("/dashboard");
     };
 
+    const [isConfigChanged, setConfigChanged] = useState(false);
+
     useEffect(() => {
         documentId && getDocumentData();
     }, []);
+
+    useEffect(() => {
+        isConfigChanged && documentId && getDocumentData();
+    }, [isConfigChanged]);
 
     useEffect(() => {
         if (document && document.allowedUsers.length > 0) {
@@ -71,7 +78,8 @@ const Editor = () => {
         return () => {
             socket.disconnect();
         };
-    }, [document]);
+    }, []);
+
     return (
         <>
             {
@@ -101,8 +109,8 @@ const Editor = () => {
                 </> :
                     (!documentError && document && userAccessType) &&
                     <div className="w-screen h-screen overflow-hidden">
-                        <Navbar document={document} accessType={userAccessType} />
-                        <TextEditor />
+                        <Navbar document={document} accessType={userAccessType} setConfigChanged={setConfigChanged} />
+                        <TextEditor document={document} accessType={userAccessType} />
                     </div>
             }
         </>

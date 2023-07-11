@@ -1,73 +1,62 @@
-import Quill from "quill";
-import "quill/dist/quill.snow.css";
-import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { editorToolbarOptions, socket } from "../../utils/config";
+import { Editor } from "@monaco-editor/react";
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import { useEffect, useState } from "react";
+import { Document } from "../../utils/types";
+import { socket } from "../../utils/config";
+import { useAuth } from "@clerk/clerk-react";
 
-const TextEditor = () => {
+const TextEditor = ({ document, accessType }: { document: Document; accessType: string; }) => {
+
     const { documentId } = useParams();
-    const [quill, setQuill] = useState<Quill | null>();
+    const [content, setContent] = useState(document.content);
+    const { getToken } = useAuth();
 
-    //Get initial document data
     useEffect(() => {
-        if (socket == null || quill == null) return;
-        socket.once('load-document', (document) => {
-            quill?.setContents(document);
-            quill?.enable();
+        const setToken = async () => {
+            const token = await getToken();
+            if (token) {
+                socket.auth = { token };
+            }
+        };
+        socket.connect();
+        setToken();
+        socket.emit("document:join", documentId);
+        socket.on("document:broadcastedChanges", (content) => {
+            console.log('Content', content);
+            setContent(content);
         });
-        socket.emit('get-document', documentId);
-    }, [socket, quill, documentId]);
-
-    //Save changes
-    useEffect(() => {
-        if (socket == null || quill == null) return;
-        const saveInterval = setInterval(() => {
-            socket.emit("save-document", quill?.getContents());
-        }, 2000);
         return () => {
-            clearInterval(saveInterval);
+            socket.disconnect();
         };
-    }, [socket, quill]);
-
-    //Receive changes
-    useEffect(() => {
-        if (socket == null || quill == null) return;
-        const changeHandler = (delta) => {
-            console.log(delta);
-            quill?.updateContents(delta);
-        };
-        socket.on("receive-changes", changeHandler);
-        return () => {
-            socket.off("receive-changes", changeHandler);
-        };
-    }, [socket, quill]);
-
-    useEffect(() => {
-        if (socket == null || quill == null) return;
-
-        const handler = (delta, oldDelta, source) => {
-            if (source !== "user") return;
-            socket.emit("send-changes", delta);
-        };
-        quill.on("text-change", handler);
-
-        return () => {
-            quill.off("text-change", handler);
-        };
-    }, [socket, quill]);
-
-    const editorWrapperRef = useCallback(wrapper => {
-        if (wrapper == null)
-            return;
-        wrapper.innerHTML = "";
-        const editor = document.createElement("div");
-        wrapper.append(editor);
-        const _quill = new Quill(editor, { theme: 'snow', modules: { toolbar: editorToolbarOptions } });
-        setQuill(_quill);
     }, []);
 
+    useEffect(() => {
+        const timeout = setTimeout(() => socket.emit("document:saveChanges", { documentId, content }), 300);
+        return () => clearTimeout(timeout);
+    }, [content]);
+
     return (
-        <div className="editor w-full" ref={editorWrapperRef}></div>
+        <div className="w-full h-full pt-14 flex items-center">
+            {accessType !== 'VIEW' && <div className="w-1/2 h-full">
+                <Editor
+                    theme="vs-light"
+                    options={{
+                        fontSize: "16px",
+                        minimap: {
+                            enabled: false,
+                        },
+                        wordWrap: true,
+                    }}
+                    value={content}
+                    onChange={(value) => value && setContent(value)}
+                    language="markdown"
+                />
+            </div>}
+            <div className="w-1/2 h-full mx-auto bg-white px-6 preview overflow-y-auto border-l-4">
+                <ReactMarkdown children={content} />
+            </div>
+        </div>
     );
 };
 export default TextEditor;
