@@ -74,7 +74,7 @@ const Navbar = ({ document, accessType, setConfigChanged }: { document: Document
                 </Link>
                 <div className="flex items-center group">
                     <h1 className="font-medium text-lg px-4 py-2" >{document.title}</h1>
-                    <button className="hidden group-hover:block p-2 text-sm border rounded-full hover:bg-neutral-900 hover:text-white duration-200 transition-colors" onClick={() => setRenameOpen(true)}><FiEdit /></button>
+                    {accessType !== 'VIEW' && <button className="hidden group-hover:block p-2 text-sm border rounded-full hover:bg-neutral-900 hover:text-white duration-200 transition-colors" onClick={() => setRenameOpen(true)}><FiEdit /></button>}
                 </div>
             </div>
             <div className="flex items-center gap-2">

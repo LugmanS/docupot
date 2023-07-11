@@ -3,7 +3,8 @@ import { Editor } from "@monaco-editor/react";
 import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { useEffect, useState } from "react";
 import { Document } from "../../utils/types";
-import { baseURL, socket } from "../../utils/config";
+import { baseURL } from "../../utils/config";
+// import { baseURL, socket } from "../../utils/config";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
@@ -71,7 +72,7 @@ const TextEditor = ({ document, accessType }: { document: Document; accessType: 
                     language="markdown"
                 />
             </div>}
-            <div className="w-1/2 h-full mx-auto bg-white px-6 preview overflow-y-auto border-l-4">
+            <div className={`${accessType === 'VIEW' ? "w-full max-w-4xl mx-auto mt-6 border" : "w-1/2 border-l-4"} h-full mx-auto bg-white p-6 preview overflow-y-auto `}>
                 <ReactMarkdown children={content} />
             </div>
         </div>

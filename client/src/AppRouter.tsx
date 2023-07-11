@@ -12,7 +12,6 @@ import Editor from "./pages/Editor";
 import Home from "./pages/Home";
 
 const clerkPubKey = import.meta.env.VITE_APP_CLERK_PUBLISHABLE_KEY;
-console.log(clerkPubKey);
 if (!clerkPubKey) {
     throw new Error("Missing Publishable Key");
 }

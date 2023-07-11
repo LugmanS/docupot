@@ -23,7 +23,6 @@ const Editor = () => {
     const [userAccessType, setUserAccessType] = useState<string | null>(null);
 
     const getDocumentData = async () => {
-        console.log('Called', isConfigChanged);
         if (!documentId) return;
         try {
             const response = await axios.get<Document>(`${baseURL}/documents/${documentId}`, {
@@ -37,9 +36,8 @@ const Editor = () => {
                 if (response.data.authorId === user.primaryEmailAddress?.emailAddress) {
                     return setUserAccessType(AccessType.OWNER);
                 }
-                console.log({ user });
                 const userPermission = response.data.allowedUsers.filter((allowedUser) => allowedUser.userEmail === user.primaryEmailAddress?.emailAddress);
-                if (userPermission) {
+                if (userPermission.length > 0) {
                     return setUserAccessType(userPermission[0].accessType);
                 }
                 setUserAccessType(AccessType.VIEW);
