@@ -7,7 +7,7 @@ import { Document } from "../../utils/types";
 import ModalWrapper from "../ModalWrapper";
 import Spinner from "../Spinner";
 
-const RenameModal = ({ isOpen, onClose, document, setConfigChanged }: { isOpen: boolean, onClose: () => void; document: Document; setConfigChanged: () => void; }) => {
+const RenameModal = ({ isOpen, onClose, document, setConfigChanged }: { isOpen: boolean, onClose: () => void; document: Document; setConfigChanged: React.Dispatch<React.SetStateAction<any>>; }) => {
 
     const { getToken } = useAuth();
 

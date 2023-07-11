@@ -10,7 +10,7 @@ import ConfirmDelete from "./ConfirmDelete";
 import RenameModal from "./RenameModal";
 import ShareModal from "./ShareModal";
 
-const Navbar = ({ document, accessType, setConfigChanged }: { document: Document; accessType: string; setConfigChanged: () => void; }) => {
+const Navbar = ({ document, accessType, setConfigChanged }: { document: Document; accessType: string; setConfigChanged: React.Dispatch<React.SetStateAction<any>>; }) => {
 
     const [isShareModalOpen, setShareModalOpen] = useState(false);
 

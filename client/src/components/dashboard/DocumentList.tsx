@@ -155,7 +155,7 @@ const DocumentList = () => {
                             <FiUpload className="w-5 h-5" />
                             Upload file
                         </label>
-                        <input type="file" id="upload-btn" accept=".md" onChange={(e) => onFileUpload(e.target.files[0])} hidden />
+                        <input type="file" id="upload-btn" accept=".md" onChange={(e) => e.target.files && onFileUpload(e.target.files[0])} hidden />
                     </form>
                 </div>
                 <div className="flex items-center gap-1 relative">

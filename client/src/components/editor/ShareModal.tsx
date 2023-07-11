@@ -8,7 +8,7 @@ import { AccessType, Document } from "../../utils/types";
 import ModalWrapper from "../ModalWrapper";
 import Spinner from "../Spinner";
 
-const ShareModal = ({ isOpen, onClose, _document, setConfigChanged }: { isOpen: boolean; onClose: () => void; _document: Document; setConfigChanged: () => void; }) => {
+const ShareModal = ({ isOpen, onClose, _document, setConfigChanged }: { isOpen: boolean; onClose: () => void; _document: Document; setConfigChanged: React.Dispatch<React.SetStateAction<any>>; }) => {
     const { getToken } = useAuth();
     const [document, setDocument] = useState<Document>(_document);
 
