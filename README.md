@@ -52,4 +52,4 @@ Start the server
 
 ## Auth workflow
 
-![Auth flow](./client/src/assets/auth-flow.png)
+![Auth flow](https://docupot.netlify.app/auth-flow.png)
