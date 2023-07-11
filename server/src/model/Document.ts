@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import { AccessType } from "../types.js";
 
 const allowedUserSchema = new Schema({
     userEmail: {

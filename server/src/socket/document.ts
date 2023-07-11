@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import Document from "../model/Document.js";
-import { AccessType } from "../types.js";
+import { AccessType } from "../utils/types.js";
 
 export default function documentEventHandler(socket: Socket) {
 
