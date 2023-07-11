@@ -2,20 +2,28 @@
   "name": "docupot-server",
   "version": "1.0.0",
   "description": "",
+  "main": "dist/index.js",
   "type": "module",
-  "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w & nodemon dist/index.js"
+    "build": "npx tsc",
+    "dev": "npx tsc -w & nodemon dist/index.js"
   },
   "author": "Lugman Hussain Khan S",
   "license": "ISC",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.10.15",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^7.3.2",
+    "nodemailer": "^6.9.3",
+    "resend": "^0.16.0",
+    "socket.io": "^4.7.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "typescript": "^5.1.6"
   }
 }
