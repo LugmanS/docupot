@@ -61,6 +61,8 @@ const DocumentList = () => {
     const [searchText, setSearchText] = useState("");
     const [isDocumentsLoading, setDocumentsLoading] = useState(false);
 
+    const [filterType, setFilterType] = useState<"authored" | "shared">("authored");
+
     const createNewDocument = async (title?: string, content?: string) => {
         console.log('CreateContent', content);
         try {
@@ -80,7 +82,7 @@ const DocumentList = () => {
     const getAllUserDocuments = async () => {
         setDocumentsLoading(true);
         try {
-            const response = await axios.get(`${baseURL}/documents`, {
+            const response = await axios.get(`${baseURL}/documents/${filterType}`, {
                 headers: {
                     'Authorization': await getToken()
                 }
@@ -111,7 +113,7 @@ const DocumentList = () => {
         if (searchText.length > 4) {
             setSearchLoading(true);
             try {
-                const response = await axios.get<Document[]>(`${baseURL}/documents?search=${searchText}`, {
+                const response = await axios.get<Document[]>(`${baseURL}/documents/${filterType}?search=${searchText}`, {
                     headers: {
                         'Authorization': await getToken()
                     }
@@ -127,7 +129,7 @@ const DocumentList = () => {
 
     useEffect(() => {
         onSearchInput();
-    }, [searchText]);
+    }, [searchText, filterType]);
 
     const [fileInput, setFileInput] = useState<{ title?: string, content?: string | ArrayBuffer | null; } | null>();
 
@@ -158,11 +160,15 @@ const DocumentList = () => {
                         <input type="file" id="upload-btn" accept=".md" onChange={(e) => e.target.files && onFileUpload(e.target.files[0])} hidden />
                     </form>
                 </div>
-                <div className="flex items-center gap-1 relative">
-                    <input type="text" className="border px-6 py-3 rounded-md w-96 text-sm focus:outline-neutral-400" placeholder="Find in documents" autoComplete="off" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-                    {searchLoading && <div className="absolute top-1/2 right-2 transform -translate-y-1/2">
-                        <Spinner className="" />
-                    </div>}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 relative">
+                        <input type="text" className="border px-6 py-3 rounded-md w-96 text-sm focus:outline-neutral-400" placeholder="Find in documents" autoComplete="off" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+                        {searchLoading && <div className="absolute top-1/2 right-2 transform -translate-y-1/2">
+                            <Spinner className="" />
+                        </div>}
+                    </div>
+                    <button className={`flex items-center justify-center gap-2 border rounded-md px-6 py-3 text-sm ${filterType === 'authored' ? "text-white bg-neutral-800 hover:bg-neutral-950" : "hover:bg-neutral-800 hover:text-white"} transition duration-200`} onClick={() => filterType !== 'authored' && setFilterType("authored")}>My files</button>
+                    <button className={`flex items-center justify-center gap-2 border rounded-md px-6 py-3 text-sm ${filterType === 'shared' ? "text-white bg-neutral-800 hover:bg-neutral-950" : "hover:bg-neutral-800 hover:text-white"} transition duration-200`} onClick={() => filterType !== 'shared' && setFilterType("shared")}>Shared</button>
                 </div>
             </div>
             {/* Empty state */}

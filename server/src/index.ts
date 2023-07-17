@@ -9,7 +9,7 @@ import {
 } from '@clerk/clerk-sdk-node';
 import http from "http";
 import cors from "cors";
-import { DocumentRouter } from "./controller/Documents.js";
+import { DocumentRouter } from "./controller/documents.js";
 import documentEventHandler from "./socket/document.js";
 
 dotenv.config();

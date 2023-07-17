@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-export const baseURL = "https://docupot.roketo.cloud/api/v1";
+export const baseURL = "http://localhost:8000/api/v1";
 
 export const socket = io("http://localhost:8000", {
     autoConnect: false

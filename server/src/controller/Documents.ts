@@ -5,8 +5,7 @@ import { getUserAccessType } from "../utils/helper.js";
 import { sendEmail } from "./email.js";
 const router = Router();
 
-//Get all user documents
-router.get("/", async (req, res) => {
+router.get("/shared", async (req, res) => {
     const { userId, claims } = req.auth;
     if (!userId || !claims.userEmail) {
         return res.sendStatus(401);
@@ -14,18 +13,40 @@ router.get("/", async (req, res) => {
     const { search } = req.query;
     try {
         if (!search) {
-            const documents = await Document.find({
-                $or: [
-                    { authorId: claims.userEmail },
-                    { allowedUsers: { $elemMatch: { userEmail: req.auth.claims.userEmail } } }
-                ]
-            });
+            const documents = await Document.find({ allowedUsers: { $elemMatch: { userEmail: req.auth.claims.userEmail } } });
             res.status(200).json(documents);
         } else {
             const documents = await Document.find({
                 $and: [
-                    { $or: [{ authorId: claims.userEmail }, { allowedUsers: { $elemMatch: { userEmail: req.auth.claims.userEmail } } }] },
-                    { $text: { $search: `/${search.toString()}/`, $caseSensitive: false, $diacriticSensitive: false } }
+                    { allowedUsers: { $elemMatch: { userEmail: req.auth.claims.userEmail } } },
+                    { $text: { $search: `/${search.toString()}/`, $caseSensitive: false } }
+                ]
+            });
+            res.status(200).json(documents);
+        }
+    } catch (error) {
+        console.log('Error while fetching documents for user:', userId, error);
+        res.sendStatus(500);
+    }
+});
+
+
+//Get all user documents
+router.get("/authored", async (req, res) => {
+    const { userId, claims } = req.auth;
+    if (!userId || !claims.userEmail) {
+        return res.sendStatus(401);
+    }
+    const { search } = req.query;
+    try {
+        if (!search) {
+            const documents = await Document.find({ authorId: claims.userEmail });
+            res.status(200).json(documents);
+        } else {
+            const documents = await Document.find({
+                $and: [
+                    { authorId: claims.userEmail },
+                    { $text: { $search: `/${search.toString()}/`, $caseSensitive: false } }
                 ]
             });
             res.status(200).json(documents);
